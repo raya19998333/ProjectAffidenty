@@ -1,21 +1,42 @@
-import "../App.css";
+import '../App.css';
+import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { registerUser } from '../Features/UserSlice';
+import { useNavigate } from 'react-router-dom';
 
-import { useState } from "react";
 export default function Register() {
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState("student");
-  const [password, setPassword] = useState("");
-  function handleSubmit(e) {
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [role, setRole] = useState('student');
+  const [password, setPassword] = useState('');
+
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { isLoading, isError, isSuccess } = useSelector((state) => state.users);
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-    alert("Register submitted (UI only, no backend)");
+    dispatch(
+      registerUser({
+        name: fullName, 
+        email,
+        password,
+        role,
+      })
+    );
+  };
+
+  if (isSuccess) {
+    navigate('/login');
   }
+
   return (
     <div className="register-wrapper">
       <section className="register-section">
         <div className="register-card">
           <h1 className="register-title">Create Account</h1>
           <p className="register-subtitle">Join Attendify in seconds</p>
+          {isError && <p style={{ color: 'red' }}>حدث خطأ أثناء التسجيل</p>}
           <form className="register-form" onSubmit={handleSubmit}>
             <label className="form-label">
               Full Name
@@ -62,12 +83,16 @@ export default function Register() {
                 required
               />
             </label>
-            <button type="submit" className="btn register-btn">
-              Register
+            <button
+              type="submit"
+              className="btn register-btn"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Registering...' : 'Register'}
             </button>
           </form>
           <p className="register-bottom-text">
-            Already have an account?{" "}
+            Already have an account?{' '}
             <a href="/login" className="login-link">
               Login
             </a>

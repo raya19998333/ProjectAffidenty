@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useSelector } from 'react-redux';
+
 const Header = () => {
+  const { user } = useSelector((state) => state.users);
+
   const location = useLocation();
   /* =============== THEME SYSTEM =============== */
   const [theme, setTheme] = useState(() => {
@@ -18,7 +22,7 @@ const Header = () => {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };
   /* =============== MOBILE MENU =============== */
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [menuOpen] = useState(false);
   return (
     <header className="main-header">
       {/* LOGO */}
@@ -28,56 +32,65 @@ const Header = () => {
       {/* MENU BUTTON MOBILE */}
 
       {/* NAV LINKS */}
-      <nav className={`header-nav ${menuOpen ? "open" : ""}`}>
+      <nav className={`header-nav ${menuOpen ? 'open' : ''}`}>
         <Link
           to="/"
-          className={`nav-link ${location.pathname === "/" ? "active" : ""}`}
+          className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
         >
           Home
         </Link>
-        <Link
-          to="/student"
-          className={`nav-link ${
-            location.pathname === "/student" ? "active" : ""
-          }`}
-        >
-          Student
-        </Link>
-        <Link
-          to="/teacher"
-          className={`nav-link ${
-            location.pathname === "/teacher" ? "active" : ""
-          }`}
-        >
-          Teacher
-        </Link>
-        <Link
-          to="/admin"
-          className={`nav-link ${
-            location.pathname === "/admin" ? "active" : ""
-          }`}
-        >
-          Admin
-        </Link>
-        <Link
-          to="/login"
-          className={`nav-link ${
-            location.pathname === "/login" ? "active" : ""
-          }`}
-        >
-          Login
-        </Link>
-        <Link
-          to="/register"
-          className={`nav-link ${
-            location.pathname === "/register" ? "active" : ""
-          }`}
-        >
-          Register
-        </Link>
-        {/* THEME TOGGLE BUTTON */}
+
+        {!user && (
+          <>
+            <Link
+              to="/login"
+              className={`nav-link ${
+                location.pathname === '/login' ? 'active' : ''
+              }`}
+            >
+              Login
+            </Link>
+
+            <Link
+              to="/register"
+              className={`nav-link ${
+                location.pathname === '/register' ? 'active' : ''
+              }`}
+            >
+              Register
+            </Link>
+          </>
+        )}
+
+        {user?.role === 'student' && (
+          <Link to="/student" className="nav-link">
+            Student
+          </Link>
+        )}
+
+        {user?.role === 'teacher' && (
+          <Link to="/teacher" className="nav-link">
+            Teacher
+          </Link>
+        )}
+
+        {user?.role === 'admin' && (
+          <Link to="/admin" className="nav-link">
+            Admin
+          </Link>
+        )}
+
+        {user && (
+          <button
+            className="nav-link logout-btn"
+            onClick={() => (window.location.href = '/login')}
+          >
+            Logout
+          </button>
+        )}
+
         <div className="theme-toggle" onClick={toggleTheme}>
-          {theme === "light" ? "🌙" : "☀"}
+          {theme === 'light' ? '🌙' : '☀'}
         </div>
       </nav>
     </header>

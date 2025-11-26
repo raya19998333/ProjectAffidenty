@@ -11,25 +11,34 @@ export const registerUser = createAsyncThunk(
   "users/registerUser",
   async (data, thunkAPI) => {
     try {
-      const res = await axios.post("http://localhost:3001/api/register", data);
+      // غير endpoint هنا ليطابق السيرفر
+      const res = await axios.post("http://localhost:3001/registerUser", data);
       return res.data.user;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.response.data);
     }
   }
 );
+
+
 // LOGIN
 export const loginUser = createAsyncThunk(
-  "users/loginUser",
+  'users/loginUser',
   async (data, thunkAPI) => {
     try {
-      const res = await axios.post("http://localhost:3001/api/login", data);
-      return res.data.user;
+      const res = await axios.post('http://localhost:3001/login', data);
+
+      // السيرفر يرجّع: { message, token, role }
+      return {
+        token: res.data.token,
+        role: res.data.role,
+      };
     } catch (error) {
-      return thunkAPI.rejectWithValue("Invalid credentials");
+      return thunkAPI.rejectWithValue('Invalid credentials');
     }
   }
 );
+
 // LOGOUT
 export const logoutUser = createAsyncThunk("users/logoutUser", async () => {
   await axios.post("http://localhost:3001/api/logout");
@@ -77,7 +86,10 @@ const userSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isSuccess = true;
-        state.user = action.payload;
+        state.user = {
+          role: action.payload.role,
+          token: action.payload.token,
+        };
       })
       .addCase(loginUser.rejected, (state) => {
         state.isLoading = false;

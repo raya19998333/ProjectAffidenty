@@ -1,30 +1,47 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import Header from "./Components/Header";
-import Footer from "./Components/Footer";
-import Home from "./Components/Home";
-import Login from "./Components/Login";
-import Register from "./Components/Register";
-import Student from "./Components/Student";
-import Teacher from "./Components/Teacher";
-import Admin from "./Components/Admin";
-import Profile from "./Components/Profile";
-import EditProfile from "./Components/Editprofile";
-function App() {
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useLocation,
+} from 'react-router-dom';
+import Register from './Components/Register';
+import Login from './Components/Login';
+import Home from './Components/Home';
+import Teacher from './Components/Teacher';
+import Student from './Components/Student';
+import Admin from './Components/Admin';
+import Header from './Components/Header';
+import Footer from './Components/Footer';
+
+function AppContent() {
+  const location = useLocation();
+
+  // الصفحات التي نخفي فيها الهيدر والفوتر
+  const hideLayout =
+    location.pathname === '/login' || location.pathname === '/register';
+
   return (
     <>
-      <Header />
+      {!hideLayout && <Header />}
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/student" element={<Student />} />
         <Route path="/teacher" element={<Teacher />} />
+        <Route path="/student" element={<Student />} />
         <Route path="/admin" element={<Admin />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/edit-profile" element={<EditProfile />} />
       </Routes>
-      <Footer />
+
+      {!hideLayout && <Footer />}
     </>
   );
 }
-export default App;
+
+export default function App() {
+  return (
+    <Router>
+      <AppContent />
+    </Router>
+  );
+}
