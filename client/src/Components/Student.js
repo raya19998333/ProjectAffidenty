@@ -1,78 +1,96 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
+import { fetchAttendance } from '../Features/attendanceSlice'; // تأكدي من المسار الصحيح
+import axios from 'axios';
+import '../App.css';
 
-import "../App.css";
 export default function Student() {
+  const dispatch = useDispatch();
+
+  // بيانات المستخدم من slice
+  const user = useSelector((state) => state.users.user);
+
+  // بيانات الحضور من slice
+  const attendance = useSelector((state) => state.attendance.history) || [];
+
   const [showModal, setShowModal] = useState(false);
-  const [sessionCode, setSessionCode] = useState("");
-  const [history, setHistory] = useState([
-    {
-      subject: "Math 101",
-      time: "08:00 AM",
-      room: "A12",
-      date: "2025-01-10",
-      status: "Present",
-    },
-    {
-      subject: "Programming",
-      time: "10:00 AM",
-      room: "B22",
-      date: "2025-01-09",
-      status: "Absent",
-    },
-  ]);
-  const handleConfirmCode = () => {
-    if (sessionCode.trim() === "") return;
-    // إضافة مادة جديدة تلقائياً في الـ UI
-    setHistory([
-      ...history,
-      {
-        subject: `Session ${sessionCode}`,
-        time: "—",
-        room: "—",
-        date: new Date().toISOString().split("T")[0],
-        status: "Present",
-      },
-    ]);
-    setSessionCode("");
-    setShowModal(false);
+  const [sessionCode, setSessionCode] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // جلب الحضور عند تحميل الصفحة
+  useEffect(() => {
+    if (user?.token) {
+      dispatch(fetchAttendance(user.token));
+    }
+  }, [user, dispatch]);
+
+  const handleConfirmCode = async () => {
+    if (!sessionCode.trim()) return;
+    if (!user?.token) return;
+
+    setIsSubmitting(true);
+
+    try {
+      const res = await axios.post(
+        'http://localhost:3001/student/attend',
+        { code: sessionCode },
+        {
+          headers: { Authorization: `Bearer ${user.token}` },
+        }
+      );
+      alert(res.data.message);
+
+      // تحديث الـ history بعد تسجيل الحضور
+      dispatch(fetchAttendance(user.token));
+      setSessionCode('');
+      setShowModal(false);
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error confirming attendance');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (!user) return <p>Loading user...</p>;
+
   return (
     <div className="dashboard-wrapper">
-      {/* الصفحة عنوان */}
       <h1 className="dashboard-title">Student Dashboard</h1>
-      {/* ========== الإحصائيات ========== */}
+
+      {/* الإحصائيات */}
       <div className="student-cards">
         <div className="student-card">
           <p className="card-label">Present</p>
           <h2 className="card-value green">
-            {history.filter((h) => h.status === "Present").length}
+            {attendance.filter((h) => h.status === 'Present').length}
           </h2>
         </div>
         <div className="student-card">
           <p className="card-label">Absent</p>
           <h2 className="card-value red">
-            {history.filter((h) => h.status === "Absent").length}
+            {attendance.filter((h) => h.status === 'Absent').length}
           </h2>
         </div>
         <div className="student-card">
           <p className="card-label">Total Sessions</p>
-          <h2 className="card-value">{history.length}</h2>
+          <h2 className="card-value">{attendance.length}</h2>
         </div>
       </div>
-      {/* ========== قسم إدخال الكود ========== */}
+
+      {/* إدخال كود الحضور */}
       <div className="qr-section">
         <div className="qr-left">
           <h2>Enter Session Code</h2>
           <p>
-            Type the session code provided by your teacher to instantly record
-            your attendance.
+            Type the session code provided by your teacher to record attendance.
           </p>
           <button className="qr-btn" onClick={() => setShowModal(true)}>
             Enter Code
           </button>
         </div>
       </div>
-      {/* ========== جدول التاريخ ========== */}
+
+      {/* جدول الحضور */}
       <div className="history-section">
         <h2>Attendance History</h2>
         <div className="history-table">
@@ -81,10 +99,10 @@ export default function Student() {
             <p>Status</p>
             <p>Date</p>
           </div>
-          {history.map((item, i) => (
+          {attendance.map((item, i) => (
             <div className="history-row" key={i}>
               <p>{item.subject}</p>
-              <p className={item.status === "Present" ? "green" : "red"}>
+              <p className={item.status === 'Present' ? 'green' : 'red'}>
                 {item.status}
               </p>
               <p>{item.date}</p>
@@ -92,7 +110,8 @@ export default function Student() {
           ))}
         </div>
       </div>
-      {/* ========== نافذة إدخال الكود ========== */}
+
+      {/* نافذة إدخال الكود */}
       {showModal && (
         <div className="modal-overlay">
           <div className="scan-modal">
@@ -104,8 +123,12 @@ export default function Student() {
               value={sessionCode}
               onChange={(e) => setSessionCode(e.target.value)}
             />
-            <button className="confirm-btn" onClick={handleConfirmCode}>
-              Confirm Attendance
+            <button
+              className="confirm-btn"
+              onClick={handleConfirmCode}
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? 'Submitting...' : 'Confirm Attendance'}
             </button>
             <button className="close-btn" onClick={() => setShowModal(false)}>
               Close

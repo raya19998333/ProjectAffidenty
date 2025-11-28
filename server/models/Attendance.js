@@ -1,8 +1,10 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
+
 const attendanceSchema = new mongoose.Schema({
-  studentId: mongoose.Schema.Types.ObjectId,
-  sessionId: mongoose.Schema.Types.ObjectId,
-  status: { type: String, default: "Present" },
-  date: String,
+  studentId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  sessionId: { type: mongoose.Schema.Types.ObjectId, ref: 'Session' },
+  status: { type: String, default: 'Present' },
+  date: { type: String },
 });
-export default mongoose.model("Attendance", attendanceSchema);
+
+export default mongoose.model('Attendance', attendanceSchema);

@@ -1,10 +1,17 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
+
 const sessionSchema = new mongoose.Schema({
-  teacherId: mongoose.Schema.Types.ObjectId,
-  sessionName: String,
-  sessionTime: String,
-  sessionRoom: String,
-  sessionDate: String,
-  sessionCode: String, // Example → X92KD
+  name: { type: String, required: true },
+  time: { type: String, required: true },
+  room: { type: String, required: true },
+  date: { type: String, required: true },
+  code: { type: String, required: true },
+  teacherId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  },
+  students: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], 
 });
-export default mongoose.model("Session", sessionSchema);
+
+export default mongoose.model('Session', sessionSchema);
