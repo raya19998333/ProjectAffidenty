@@ -1,25 +1,46 @@
-import React, { useState } from "react";
-import "../App.css";
+import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import {
+  fetchAdminStats,
+  fetchRecentSessions,
+  fetchNewUsers,
+  fetchSystemNotes,
+} from '../Features/adminSlice';
+import '../App.css';
+
 export default function Admin() {
-  const [stats, setStats] = useState({
-    students: 320,
-    teachers: 25,
-    sessions: 48,
-    attendanceToday: 279,
-  });
-  const [recentSessions, setRecentSessions] = useState([
-    { name: "Math 101", time: "08:00 AM", teacher: "Mr. Ali" },
-    { name: "Database Systems", time: "10:00 AM", teacher: "Ms. Noor" },
-    { name: "Programming 2", time: "01:00 PM", teacher: "Mr. Ahmed" },
-  ]);
-  const [recentUsers, setRecentUsers] = useState([
-    { name: "Sara", role: "Student" },
-    { name: "Reem", role: "Student" },
-    { name: "Fahad", role: "Teacher" },
-  ]);
+  const dispatch = useDispatch();
+  const { stats, recentSessions, newUsers, systemNotes, loading, error } =
+    useSelector((state) => state.admin);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('You must log in as admin to view this page.');
+      return;
+    }
+
+    dispatch(fetchAdminStats());
+    dispatch(fetchRecentSessions());
+    dispatch(fetchNewUsers());
+    dispatch(fetchSystemNotes());
+  }, [dispatch]);
+
+  if (loading) return <h2 className="dashboard-title">Loading...</h2>;
+
+  if (error)
+    return (
+      <h2 className="dashboard-title">
+        Error: {error.message || JSON.stringify(error)}
+      </h2>
+    );
+
+  if (!stats) return <h2 className="dashboard-title">No Data</h2>;
+
   return (
     <div className="dashboard-wrapper">
       <h1 className="dashboard-title">Admin Dashboard</h1>
+
       {/* TOP CARDS */}
       <div className="student-cards">
         <div className="student-card">
@@ -39,59 +60,68 @@ export default function Admin() {
           <h2 className="card-value">{stats.attendanceToday}</h2>
         </div>
       </div>
-      {/* CHART */}
-      <h2 className="panel-title" style={{ marginTop: "40px" }}>
+
+      {/* Weekly Attendance Chart */}
+      <h2 className="panel-title" style={{ marginTop: '40px' }}>
         Weekly Attendance
       </h2>
       <div className="panel">
         <div className="chart">
-          {[50, 80, 60, 90, 40, 70].map((value, index) => (
+          {stats.weeklyAttendance?.map((value, index) => (
             <div className="chart-bar" key={index}>
               <div className="bar-fill" style={{ height: `${value}%` }}></div>
               <div className="bar-label">
-                {["Sat", "Sun", "Mon", "Tue", "Wed", "Thu"][index]}
+                {['Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu'][index]}
               </div>
             </div>
           ))}
         </div>
       </div>
-      {/* PANELS GRID */}
+
+      {/* Panels Grid */}
       <div className="admin-panels">
         {/* Recent Sessions */}
         <div className="panel">
           <h3 className="panel-title">Recent Sessions</h3>
           <div className="panel-list">
-            {recentSessions.map((s, index) => (
+            {recentSessions?.map((s, index) => (
               <div className="list-item" key={index}>
                 <span>
                   <strong>{s.name}</strong> — {s.time}
                 </span>
-                <span style={{ color: "#0b4f9f" }}>{s.teacher}</span>
+                <span style={{ color: '#0b4f9f' }}>{s.teacherId?.name}</span>
               </div>
             ))}
           </div>
         </div>
+
         {/* New Users */}
         <div className="panel">
           <h3 className="panel-title">New Users</h3>
           <div className="panel-list">
-            {recentUsers.map((u, index) => (
+            {newUsers?.map((u, index) => (
               <div className="list-item" key={index}>
                 <span>{u.name}</span>
-                <span style={{ color: "#3b82f6", fontWeight: "600" }}>
+                <span style={{ color: '#3b82f6', fontWeight: '600' }}>
                   {u.role}
                 </span>
               </div>
             ))}
           </div>
         </div>
+
         {/* System Notes */}
         <div className="panel">
           <h3 className="panel-title">System Notes</h3>
-          <p className="risk-note">• All systems operating normally.</p>
-          <p className="risk-note">• Database: Healthy and optimized.</p>
-          <p className="risk-note">• No suspicious activity detected.</p>
-          <p className="risk-note">• 99.3% system uptime.</p>
+          {systemNotes && systemNotes.length > 0 ? (
+            systemNotes.map((note, index) => (
+              <p key={index} className="risk-note">
+                • {note.message}
+              </p>
+            ))
+          ) : (
+            <p className="risk-note">• No system notes</p>
+          )}
         </div>
       </div>
     </div>

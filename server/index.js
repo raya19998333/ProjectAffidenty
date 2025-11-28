@@ -7,7 +7,7 @@ import jwt from 'jsonwebtoken';
 import User from './models/User.js';
 import Session from './models/Session.js';
 import Attendance from './models/Attendance.js';
-
+import SystemNote from './models/SystemNote.js';+
 dotenv.config();
 
 // =======================
@@ -209,7 +209,87 @@ app.get('/student/history', authenticateRole('student'), async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+// ========== ADMIN: Dashboard Stats ==========
+app.get('/admin/stats', authenticateRole('admin'), async (req, res) => {
+  try {
+    const students = await User.countDocuments({ role: 'student' });
+    const teachers = await User.countDocuments({ role: 'teacher' });
+    const sessions = await Session.countDocuments();
 
+    const today = new Date().toISOString().split('T')[0];
+    const attendanceToday = await Attendance.countDocuments({ date: today });
+
+    res.json({
+      students,
+      teachers,
+      sessions,
+      attendanceToday,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get(
+  '/admin/recent-sessions',
+  authenticateRole('admin'),
+  async (req, res) => {
+    try {
+      const sessions = await Session.find()
+        .sort({ date: -1 })
+        .limit(5)
+        .populate('teacherId', 'name'); // اسم المدرس فقط
+      res.json(sessions);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+);
+app.get('/admin/new-users', authenticateRole('admin'), async (req, res) => {
+  try {
+    const users = await User.find()
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .select('name role');
+    res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+// =======================
+// ADMIN: Weekly Attendance
+// =======================
+app.get('/admin/attendance-weekly', authenticateRole('admin'), async (req, res) => {
+  try {
+    const today = new Date();
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - today.getDay()); // بداية الأسبوع الأحد
+
+    const attendance = [];
+
+    for (let i = 0; i < 7; i++) {
+      const day = new Date(weekStart);
+      day.setDate(weekStart.getDate() + i);
+
+      const dateStr = day.toISOString().split('T')[0];
+
+      const count = await Attendance.countDocuments({ date: dateStr });
+      attendance.push({ day: dateStr, count });
+    }
+
+    res.json(attendance);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+app.get('/admin/system-notes', authenticateRole('admin'), async (req, res) => {
+  try {
+    const notes = await SystemNote.find().sort({ createdAt: -1 }).limit(10);
+    res.json(notes);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 // =======================
 // START SERVER
 // =======================

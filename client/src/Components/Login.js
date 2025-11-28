@@ -13,10 +13,19 @@ export default function Login() {
 
   const { user, isSuccess, isError } = useSelector((state) => state.users);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    dispatch(loginUser({ email, password }));
-  };
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const result = await dispatch(loginUser({ email, password }));
+
+  if (result.meta.requestStatus === 'fulfilled') {
+    // حفظ الـ token والدور
+    localStorage.setItem('token', result.payload.token);
+    localStorage.setItem('role', result.payload.role);
+  } else {
+    console.log('Login failed');
+  }
+};
 
   // التوجيه حسب الدور
   useEffect(() => {

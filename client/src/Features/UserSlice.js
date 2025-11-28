@@ -27,8 +27,6 @@ export const loginUser = createAsyncThunk(
   async (data, thunkAPI) => {
     try {
       const res = await axios.post('http://localhost:3001/login', data);
-
-      // السيرفر يرجّع: { message, token, role }
       return {
         token: res.data.token,
         role: res.data.role,
