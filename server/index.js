@@ -97,7 +97,6 @@ app.post('/registerUser', async (req, res) => {
 });
 
 // ===== LOGIN =====
-// LOGIN
 app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -121,6 +120,7 @@ app.post('/login', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
 // ===== TEACHER: Create Session =====
 app.post(
   '/teacher/create-session',
@@ -246,6 +246,16 @@ app.get('/admin/new-users', authenticateRole('admin'), async (req, res) => {
       .limit(5)
       .select('name role');
     res.json(users);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+// ===== ADMIN: System Notes =====
+// مثال: server.js أو index.js
+app.get('/admin/system-notes', authenticateRole('admin'), async (req, res) => {
+  try {
+    const notes = await SystemNote.find().sort({ createdAt: -1 }).limit(5);
+    res.json(notes);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

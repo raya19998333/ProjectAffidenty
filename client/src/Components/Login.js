@@ -5,7 +5,6 @@ import { loginUser } from '../Features/UserSlice';
 import { useNavigate } from 'react-router-dom';
 
 export default function Login({ setUser }) {
-  // ← تمرير setUser من App.js
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -25,26 +24,32 @@ export default function Login({ setUser }) {
         token: result.payload.token,
         role: result.payload.role,
       };
+
+      // ← مهم: خزني التوكن مباشرة باسم 'token'
       localStorage.setItem('user', JSON.stringify(userData));
-      setUser(userData); // ← تحديث حالة App.js
+      localStorage.setItem('token', result.payload.token);
+
+      setUser(userData); // تحديث حالة App.js
+
+      // التوجيه حسب الدور مباشرة بعد تسجيل الدخول
+      if (userData.role === 'student') navigate('/student');
+      else if (userData.role === 'teacher') navigate('/teacher');
+      else if (userData.role === 'admin') navigate('/admin');
     } else {
       console.log('Login failed');
     }
   };
 
-  // التوجيه حسب الدور
+  // ← إذا المستخدم مسجل دخوله مسبقاً في localStorage
   useEffect(() => {
     const savedUser = JSON.parse(localStorage.getItem('user'));
     if (savedUser) {
+      setUser(savedUser); // تحديث App.js
       if (savedUser.role === 'student') navigate('/student');
-      if (savedUser.role === 'teacher') navigate('/teacher');
-      if (savedUser.role === 'admin') navigate('/admin');
-    } else if (isSuccess && user) {
-      if (user.role === 'student') navigate('/student');
-      if (user.role === 'teacher') navigate('/teacher');
-      if (user.role === 'admin') navigate('/admin');
+      else if (savedUser.role === 'teacher') navigate('/teacher');
+      else if (savedUser.role === 'admin') navigate('/admin');
     }
-  }, [isSuccess, user, navigate]);
+  }, [navigate, setUser]);
 
   return (
     <div className="login-wrapper">

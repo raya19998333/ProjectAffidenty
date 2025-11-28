@@ -12,6 +12,7 @@ export const fetchAdminStats = createAsyncThunk(
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No token found, login required');
 
+      console.log('Fetching stats with token:', token);
       const res = await axios.get('http://localhost:3001/admin/stats', {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -30,6 +31,7 @@ export const fetchRecentSessions = createAsyncThunk(
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No token found, login required');
 
+      console.log('Fetching recent sessions with token:', token);
       const res = await axios.get(
         'http://localhost:3001/admin/recent-sessions',
         {
@@ -51,6 +53,7 @@ export const fetchNewUsers = createAsyncThunk(
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No token found, login required');
 
+      console.log('Fetching new users with token:', token);
       const res = await axios.get('http://localhost:3001/admin/new-users', {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -69,30 +72,35 @@ export const fetchWeeklyAttendance = createAsyncThunk(
       const token = localStorage.getItem('token');
       if (!token) throw new Error('No token found, login required');
 
+      console.log('Fetching weekly attendance with token:', token);
       const res = await axios.get(
         'http://localhost:3001/admin/attendance-weekly',
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      return res.data; // array of { day, count }
+      return res.data;
     } catch (err) {
       return thunkAPI.rejectWithValue(err.response?.data || err.message);
     }
   }
 );
 
+// 5️⃣ Get System Notes
 export const fetchSystemNotes = createAsyncThunk(
   'admin/fetchSystemNotes',
   async (_, thunkAPI) => {
     try {
       const token = localStorage.getItem('token');
+      if (!token) throw new Error('No token found, login required');
+
+      console.log('Fetching system notes with token:', token);
       const res = await axios.get('http://localhost:3001/admin/system-notes', {
         headers: { Authorization: `Bearer ${token}` },
       });
       return res.data;
     } catch (error) {
-      return thunkAPI.rejectWithValue(error.response?.data || 'Error');
+      return thunkAPI.rejectWithValue(error.response?.data || error.message);
     }
   }
 );
@@ -105,6 +113,7 @@ const adminSlice = createSlice({
     recentSessions: [],
     newUsers: [],
     weeklyAttendance: [],
+    systemNotes: [],
     loading: false,
     error: null,
   },
@@ -166,6 +175,21 @@ const adminSlice = createSlice({
         state.loading = false;
       })
       .addCase(fetchWeeklyAttendance.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+
+    // System Notes
+    builder
+      .addCase(fetchSystemNotes.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchSystemNotes.fulfilled, (state, action) => {
+        state.systemNotes = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchSystemNotes.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });
