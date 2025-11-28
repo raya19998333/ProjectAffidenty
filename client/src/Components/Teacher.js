@@ -3,9 +3,9 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchSessions, createSession } from '../Features/teacherSlice';
 import '../App.css';
 
-export default function Teacher() {
+export default function Teacher({ user }) {
+  // ← استخدمي prop user
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.users);
   const { sessions, isLoading } = useSelector((state) => state.teacher);
 
   const [showModal, setShowModal] = useState(false);
@@ -35,7 +35,6 @@ export default function Teacher() {
       })
     );
 
-    // reset modal
     setShowModal(false);
     setSessionName('');
     setSessionTime('');
@@ -56,7 +55,6 @@ export default function Teacher() {
         <div className="student-card">
           <p className="card-label">Today's Students</p>
           <h2 className="card-value green">
-            {/* مجموع الطلاب لكل الجلسات */}
             {sessions.reduce(
               (acc, session) => acc + (session.students?.length || 0),
               0

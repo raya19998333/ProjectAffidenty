@@ -1,35 +1,36 @@
-import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
-import { useSelector } from 'react-redux';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 
-const Header = () => {
-  const { user } = useSelector((state) => state.users);
-
+const Header = ({ user, onLogout }) => {
   const location = useLocation();
+
   /* =============== THEME SYSTEM =============== */
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem("attendify-theme") || "light";
+    return localStorage.getItem('attendify-theme') || 'light';
   });
+
   useEffect(() => {
-    if (theme === "dark") {
-      document.body.classList.add("dark");
+    if (theme === 'dark') {
+      document.body.classList.add('dark');
     } else {
-      document.body.classList.remove("dark");
+      document.body.classList.remove('dark');
     }
-    localStorage.setItem("attendify-theme", theme);
+    localStorage.setItem('attendify-theme', theme);
   }, [theme]);
+
   const toggleTheme = () => {
-    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
   };
+
   /* =============== MOBILE MENU =============== */
   const [menuOpen] = useState(false);
+
   return (
     <header className="main-header">
       {/* LOGO */}
       <div className="header-logo">
         <Link to="/">Attendify</Link>
       </div>
-      {/* MENU BUTTON MOBILE */}
 
       {/* NAV LINKS */}
       <nav className={`header-nav ${menuOpen ? 'open' : ''}`}>
@@ -62,18 +63,25 @@ const Header = () => {
           </>
         )}
 
+        {/* Profile Link only if logged in */}
+        {user && (
+          <>
+            <Link to="/profile" className="nav-link">
+              Profile
+            </Link>
+          </>
+        )}
+
         {user?.role === 'student' && (
           <Link to="/student" className="nav-link">
             Student
           </Link>
         )}
-
         {user?.role === 'teacher' && (
           <Link to="/teacher" className="nav-link">
             Teacher
           </Link>
         )}
-
         {user?.role === 'admin' && (
           <Link to="/admin" className="nav-link">
             Admin
@@ -81,10 +89,7 @@ const Header = () => {
         )}
 
         {user && (
-          <button
-            className="nav-link logout-btn"
-            onClick={() => (window.location.href = '/login')}
-          >
+          <button className="nav-link logout-btn" onClick={onLogout}>
             Logout
           </button>
         )}
@@ -96,4 +101,5 @@ const Header = () => {
     </header>
   );
 };
+
 export default Header;

@@ -4,18 +4,30 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import multer from 'multer';
+
 import User from './models/User.js';
 import Session from './models/Session.js';
 import Attendance from './models/Attendance.js';
-import SystemNote from './models/SystemNote.js';+
+import SystemNote from './models/SystemNote.js';
+
 dotenv.config();
 
-// =======================
-// ENV VARIABLES
-// =======================
 const { PORT, DB_USER, DB_PASSWORD, DB_NAME, DB_CLUSTER, JWT_SECRET } =
   process.env;
 
+// =======================
+// MULTER SETUP
+// =======================
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, 'uploads/'),
+  filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname),
+});
+const upload = multer({ storage });
+
+// =======================
+// EXPRESS SETUP
+// =======================
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -46,7 +58,7 @@ const authenticateRole = (requiredRole) => {
           .status(403)
           .json({ message: 'Forbidden: insufficient rights' });
 
-      req.user = decoded; // contains id, email, role
+      req.user = decoded;
       next();
     } catch (err) {
       res.status(401).json({ message: 'Invalid token' });
@@ -59,11 +71,9 @@ const authenticateRole = (requiredRole) => {
 // =======================
 
 // Test route
-app.get('/', (req, res) => {
-  res.send('Attendify Server Running');
-});
+app.get('/', (req, res) => res.send('Attendify Server Running'));
 
-// REGISTER USER
+// ===== REGISTER USER =====
 app.post('/registerUser', async (req, res) => {
   try {
     const { name, email, password, role } = req.body;
@@ -80,15 +90,13 @@ app.post('/registerUser', async (req, res) => {
       role: role || 'student',
     });
 
-    res.status(201).json({
-      message: 'User registered',
-      newUser,
-    });
+    res.status(201).json({ message: 'User registered', newUser });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
+// ===== LOGIN =====
 // LOGIN
 app.post('/login', async (req, res) => {
   try {
@@ -113,15 +121,13 @@ app.post('/login', async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-// ========== TEACHER: Create Session ==========
+// ===== TEACHER: Create Session =====
 app.post(
   '/teacher/create-session',
   authenticateRole('teacher'),
   async (req, res) => {
     try {
       const { name, time, room, date } = req.body;
-
       const code = Math.random().toString(36).substring(2, 7).toUpperCase();
 
       const session = await Session.create({
@@ -133,45 +139,37 @@ app.post(
         teacherId: req.user.id,
       });
 
-      res.status(201).json({
-        message: 'Session created',
-        session,
-      });
+      res.status(201).json({ message: 'Session created', session });
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   }
 );
 
-// ========== TEACHER: Get Sessions ==========
+// ===== TEACHER: Get Sessions =====
 app.get('/teacher/sessions', authenticateRole('teacher'), async (req, res) => {
   try {
     const sessions = await Session.find({ teacherId: req.user.id });
-
-    res.json({
-      count: sessions.length,
-      sessions,
-    });
+    res.json({ count: sessions.length, sessions });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// ========== STUDENT: Confirm Attendance ==========
+// ===== STUDENT: Confirm Attendance =====
 app.post('/student/attend', authenticateRole('student'), async (req, res) => {
   try {
     const { code } = req.body;
-
-    // إيجاد الجلسة بالكود
     const session = await Session.findOne({ code });
-    if (!session) return res.status(404).json({ message: 'Invalid session code' });
+    if (!session)
+      return res.status(404).json({ message: 'Invalid session code' });
 
-    // التحقق إن الطالب سجل الحضور مسبقاً
     const existing = await Attendance.findOne({
       studentId: req.user.id,
-      sessionId: session._id
+      sessionId: session._id,
     });
-    if (existing) return res.status(400).json({ message: 'Attendance already recorded' });
+    if (existing)
+      return res.status(400).json({ message: 'Attendance already recorded' });
 
     const attendance = await Attendance.create({
       studentId: req.user.id,
@@ -179,7 +177,6 @@ app.post('/student/attend', authenticateRole('student'), async (req, res) => {
       date: new Date().toISOString().split('T')[0],
     });
 
-    // إضافة الطالب للجلسة إذا لم يكن موجوداً
     if (!session.students.includes(req.user.id)) {
       session.students.push(req.user.id);
       await session.save();
@@ -190,46 +187,41 @@ app.post('/student/attend', authenticateRole('student'), async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-// ========== STUDENT: Get Attendance History ==========
+
+// ===== STUDENT: Attendance History =====
 app.get('/student/history', authenticateRole('student'), async (req, res) => {
   try {
-    const attendanceRecords = await Attendance.find({ studentId: req.user.id })
-      .populate('sessionId'); // يجلب معلومات الجلسة
-
-    const history = attendanceRecords.map((record) => ({
-      subject: record.sessionId.name,
-      time: record.sessionId.time,
-      room: record.sessionId.room,
-      date: record.date,
-      status: record.status,
+    const records = await Attendance.find({ studentId: req.user.id }).populate(
+      'sessionId'
+    );
+    const history = records.map((r) => ({
+      subject: r.sessionId.name,
+      time: r.sessionId.time,
+      room: r.sessionId.room,
+      date: r.date,
+      status: r.status,
     }));
-
     res.json({ count: history.length, history });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
-// ========== ADMIN: Dashboard Stats ==========
+
+// ===== ADMIN: Stats =====
 app.get('/admin/stats', authenticateRole('admin'), async (req, res) => {
   try {
     const students = await User.countDocuments({ role: 'student' });
     const teachers = await User.countDocuments({ role: 'teacher' });
     const sessions = await Session.countDocuments();
-
     const today = new Date().toISOString().split('T')[0];
     const attendanceToday = await Attendance.countDocuments({ date: today });
-
-    res.json({
-      students,
-      teachers,
-      sessions,
-      attendanceToday,
-    });
+    res.json({ students, teachers, sessions, attendanceToday });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
+// ===== ADMIN: Recent Sessions =====
 app.get(
   '/admin/recent-sessions',
   authenticateRole('admin'),
@@ -238,13 +230,15 @@ app.get(
       const sessions = await Session.find()
         .sort({ date: -1 })
         .limit(5)
-        .populate('teacherId', 'name'); // اسم المدرس فقط
+        .populate('teacherId', 'name');
       res.json(sessions);
     } catch (err) {
       res.status(500).json({ error: err.message });
     }
   }
 );
+
+// ===== ADMIN: New Users =====
 app.get('/admin/new-users', authenticateRole('admin'), async (req, res) => {
   try {
     const users = await User.find()
@@ -256,41 +250,6 @@ app.get('/admin/new-users', authenticateRole('admin'), async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-// =======================
-// ADMIN: Weekly Attendance
-// =======================
-app.get('/admin/attendance-weekly', authenticateRole('admin'), async (req, res) => {
-  try {
-    const today = new Date();
-    const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() - today.getDay()); // بداية الأسبوع الأحد
 
-    const attendance = [];
-
-    for (let i = 0; i < 7; i++) {
-      const day = new Date(weekStart);
-      day.setDate(weekStart.getDate() + i);
-
-      const dateStr = day.toISOString().split('T')[0];
-
-      const count = await Attendance.countDocuments({ date: dateStr });
-      attendance.push({ day: dateStr, count });
-    }
-
-    res.json(attendance);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-app.get('/admin/system-notes', authenticateRole('admin'), async (req, res) => {
-  try {
-    const notes = await SystemNote.find().sort({ createdAt: -1 }).limit(10);
-    res.json(notes);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-// =======================
-// START SERVER
-// =======================
+// ===== START SERVER =====
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));

@@ -1764,3 +1764,262 @@ button {
 
   margin-top: 90px;
 }
+
+/*Profile*/
+.profile-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0px 2px 10px rgba(0,0,0,0.1);
+}
+
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.empty-avatar {
+  background: #eee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-info {
+  text-align: left;
+  margin-top: 10px;
+}
+
+.profile-info p {
+  margin: 5px 0;
+}
+
+.profile-name {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+.edit-profile-section {
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  margin-top: 20px;
+}
+
+.section-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.profile-form .form-group-custom {
+  margin-bottom: 18px;
+}
+
+.form-label-custom {
+  font-weight: 600;
+  color: #555;
+}
+
+.input-custom {
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.update-btn {
+  width: 180px;
+  padding: 10px;
+  border-radius: 10px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+/* البطاقة الشخصية */
+.profile-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  text-align: center;
+  margin-top: 20px;
+}
+
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+
+.empty-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px auto;
+}
+
+/* قسم تعديل الحساب */
+.edit-profile-section {
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  margin-top: 20px;
+}
+
+.section-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.profile-form .form-group-custom {
+  margin-bottom: 18px;
+}
+
+.form-label-custom {
+  font-weight: 600;
+  color: #555;
+}
+
+.input-custom {
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+.preview-img {
+  width: 100px;
+  margin-top: 10px;
+  border-radius: 10px;
+}
+
+.update-btn {
+  width: 180px;
+  padding: 10px;
+  border-radius: 10px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+.location-card {
+  background: #f9f9f9;
+  padding: 15px;
+  border-radius: 12px;
+  text-align: center;
+  margin-top: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.location-card h5 {
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+
+.location-card p {
+  margin: 0;
+  color: #555;
+}
+.user-header {
+  background: #f0f4f8;
+  padding: 15px 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+.user-header h2 {
+  margin: 0 0 5px 0;
+  font-size: 22px;
+}
+.user-header p {
+  margin: 0;
+  color: #555;
+}
+/* رأس الصفحة */
+.user-header {
+  background: #f0f4f8;
+  padding: 15px 20px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+.user-header h2 {
+  margin: 0 0 5px 0;
+  font-size: 22px;
+}
+.user-header p {
+  margin: 0;
+  color: #555;
+}
+
+/* البطاقة الشخصية */
+.profile-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  text-align: center;
+  margin-top: 20px;
+}
+.profile-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 10px;
+}
+.empty-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 10px auto;
+}
+
+/* قسم تعديل الحساب */
+.edit-profile-section {
+  background: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  margin-top: 20px;
+}
+.section-title {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #333;
+}
+.profile-form .form-group-custom {
+  margin-bottom: 18px;
+}
+.form-label-custom {
+  font-weight: 600;
+  color: #555;
+}
+.input-custom {
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+.preview-img {
+  width: 100px;
+  margin-top: 10px;
+  border-radius: 10px;
+}
+.update-btn {
+  width: 180px;
+  padding: 10px;
+  border-radius: 10px;
+  font-weight: 600;
+  margin-top: 10px;
+}

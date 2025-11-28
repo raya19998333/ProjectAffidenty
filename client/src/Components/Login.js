@@ -4,7 +4,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { loginUser } from '../Features/UserSlice';
 import { useNavigate } from 'react-router-dom';
 
-export default function Login() {
+export default function Login({ setUser }) {
+  // ← تمرير setUser من App.js
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
@@ -13,23 +14,32 @@ export default function Login() {
 
   const { user, isSuccess, isError } = useSelector((state) => state.users);
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  const result = await dispatch(loginUser({ email, password }));
+    const result = await dispatch(loginUser({ email, password }));
 
-  if (result.meta.requestStatus === 'fulfilled') {
-    // حفظ الـ token والدور
-    localStorage.setItem('token', result.payload.token);
-    localStorage.setItem('role', result.payload.role);
-  } else {
-    console.log('Login failed');
-  }
-};
+    if (result.meta.requestStatus === 'fulfilled') {
+      // حفظ التوكن والدور في localStorage
+      const userData = {
+        token: result.payload.token,
+        role: result.payload.role,
+      };
+      localStorage.setItem('user', JSON.stringify(userData));
+      setUser(userData); // ← تحديث حالة App.js
+    } else {
+      console.log('Login failed');
+    }
+  };
 
   // التوجيه حسب الدور
   useEffect(() => {
-    if (isSuccess && user) {
+    const savedUser = JSON.parse(localStorage.getItem('user'));
+    if (savedUser) {
+      if (savedUser.role === 'student') navigate('/student');
+      if (savedUser.role === 'teacher') navigate('/teacher');
+      if (savedUser.role === 'admin') navigate('/admin');
+    } else if (isSuccess && user) {
       if (user.role === 'student') navigate('/student');
       if (user.role === 'teacher') navigate('/teacher');
       if (user.role === 'admin') navigate('/admin');

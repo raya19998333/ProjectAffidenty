@@ -4,11 +4,9 @@ import { fetchAttendance } from '../Features/attendanceSlice'; // تأكدي م�
 import axios from 'axios';
 import '../App.css';
 
-export default function Student() {
+export default function Student({ user }) {
+  // ← استقبلي prop user
   const dispatch = useDispatch();
-
-  // بيانات المستخدم من slice
-  const user = useSelector((state) => state.users.user);
 
   // بيانات الحضور من slice
   const attendance = useSelector((state) => state.attendance.history) || [];
@@ -22,7 +20,7 @@ export default function Student() {
     if (user?.token) {
       dispatch(fetchAttendance(user.token));
     }
-  }, [user, dispatch]);
+  }, [user?.token, dispatch]);
 
   const handleConfirmCode = async () => {
     if (!sessionCode.trim()) return;
@@ -51,7 +49,6 @@ export default function Student() {
     }
   };
 
-  if (!user) return <p>Loading user...</p>;
 
   return (
     <div className="dashboard-wrapper">
